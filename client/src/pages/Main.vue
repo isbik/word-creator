@@ -1,13 +1,15 @@
 <template>
   <div class="container">
-    <div v-for="card in cards" :key="card.id" class="card card-1">
-      <h2 class="card__title">{{ card.name }} ({{ card.words }})</h2>
+    <div class="cards">
+      <div v-for="card in cards" :key="card.id" class="card card-1">
+        <h2 class="card__title">{{ card.name }} ({{ card.words }})</h2>
 
-      <p class="card__apply">
-        <router-link :to="`/card/${card.id}`">
-          <button>Тренировать</button>
-        </router-link>
-      </p>
+        <p class="card__apply">
+          <router-link :to="`/card/${card.id}`">
+            <button>Тренировать</button>
+          </router-link>
+        </p>
+      </div>
     </div>
   </div>
 </template>
@@ -52,7 +54,15 @@ a,
   text-decoration: none;
   color: rgba(255, 255, 255, 0.9);
 }
+.cards {
+  padding: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
 
+  grid-gap: 10px;
+  align-items: stretch;
+  justify-items: stretch;
+}
 .card {
   padding: 10px;
   width: 100%;
