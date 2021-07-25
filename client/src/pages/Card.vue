@@ -88,7 +88,10 @@ export default {
         wordGame.pickedLetters = wordGame.splittedWord.map((letter) => {
           return { letter, value: null };
         });
-        wordGame.splittedWord = wordGame.splittedWord.filter((letter) => letter !== ' ').sort(() => Math.random() - 0.5);
+        wordGame.splittedWord = wordGame.splittedWord.filter((letter) => letter !== ' ');
+        for (let i = 0; i <= 3; i++) {
+          wordGame.splittedWord.sort(() => Math.random() - 0.5);
+        }
       },
       { immediate: true },
     );
