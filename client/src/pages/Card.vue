@@ -6,7 +6,7 @@
           <button>x</button>
         </router-link>
         <div class="progress">
-          <span class="progress-bar" :style="`width: ${width}%`"></span>
+          <span class="progress-bar" :style="`width: ${width}%`" />
         </div>
         <p>{{ wordIndex + 1 }} из {{ words.length }}</p>
       </div>
@@ -16,34 +16,37 @@
       </p>
       <div class="letters">
         <div
-          @click="pickLetter(index, letter)"
-          class="letter noselect"
           v-for="(letter, index) in letters"
           :key="index"
+          class="letter noselect"
+          @click="pickLetter(index, letter)"
         >
           {{ letter }}
         </div>
       </div>
       <div class="picked-letters">
         <div
-          class="letter"
-          :class="letterClass(letter)"
           v-for="(letter, index) in pickedLetters"
           :key="index"
+          class="letter"
+          :class="letterClass(letter)"
+          @click="removeLetter(index, letter)"
         >
           {{ letter.value }}
         </div>
       </div>
 
-      <button style="margin-right: 10px" @click="changeWord(-1)">&lt;</button>
-      <button style="margin-right: 10px" @click="changeWord(1)">></button>
+      <button style="margin-right: 10px" @click="resetWord">Сбросить</button>
+      <button style="margin-right: 10px" @click="checkWord">Проверить</button>
     </div>
   </div>
 </template>
 
 <script>
-import { reactive, ref, toRefs } from '@vue/reactivity';
-import { computed, onBeforeUnmount, onMounted, watch } from '@vue/runtime-core';
+import { reactive, toRefs } from '@vue/reactivity';
+import { computed, watch } from '@vue/runtime-core';
+import { shuffle } from '../lib/array';
+import useWindowEvent from '../hooks/useWindowEvent';
 const words = [
   {
     id: 123,
@@ -72,7 +75,7 @@ export default {
     const card = { name: 'Test' };
 
     const wordGame = reactive({
-      wordIndex: 2,
+      wordIndex: 0,
       pickedLetters: [],
       splittedWord: [],
     });
@@ -88,40 +91,20 @@ export default {
         wordGame.pickedLetters = wordGame.splittedWord.map((letter) => {
           return { letter, value: null };
         });
-        wordGame.splittedWord = wordGame.splittedWord.filter((letter) => letter !== ' ');
-        for (let i = 0; i <= 3; i++) {
-          wordGame.splittedWord.sort(() => Math.random() - 0.5);
-        }
+        wordGame.splittedWord = shuffle(wordGame.splittedWord.filter((letter) => letter !== ' '));
       },
       { immediate: true },
     );
 
-    const handlerKeyUp = ({ key }) => {
-      let index = wordGame.splittedWord.findIndex((letter) => letter.toLowerCase() === key);
-
-      if (index === -1) return;
-
-      let letterIndex = wordGame.pickedLetters.findIndex(
-        ({ value, letter: l }) => value === null && l !== ' ',
-      );
-
-      wordGame.pickedLetters[letterIndex].value = wordGame.splittedWord[index];
-
-      wordGame.splittedWord.splice(index, 1);
-    };
-
-    onMounted(() => {
-      window.addEventListener('keydown', handlerKeyUp);
-    });
-
-    onBeforeUnmount(() => {
-      window.removeEventListener('keydown', handlerKeyUp);
-    });
-
     // functions
-    const letterClass = ({ letter, value }) => ({ empty: letter === ' ' });
+    const letterClass = ({ letter }) => ({ empty: letter === ' ' });
 
-    const changeWord = (count) => (wordGame.wordIndex += count);
+    const changeWord = (count) => {
+      let index = wordGame.wordIndex + count;
+
+      if (!words[index]) return;
+      wordGame.wordIndex = index;
+    };
 
     const pickLetter = (index, letter) => {
       wordGame.splittedWord.splice(index, 1);
@@ -133,8 +116,72 @@ export default {
       wordGame.pickedLetters[letterIndex].value = letter;
     };
 
+    const removeLetter = (index, { value }) => {
+      if (!value) return;
+      wordGame.pickedLetters[index].value = null;
+      wordGame.splittedWord.push(value);
+    };
+
+    const resetWord = () => {
+      wordGame.pickedLetters.forEach(({ value }, index) => {
+        if (!value) return;
+        wordGame.splittedWord.push(value);
+
+        wordGame.pickedLetters[index].value = null;
+      });
+    };
+    const checkWord = () => {
+      let resultWord = wordGame.pickedLetters
+        .map(({ value }) => value)
+        .join('')
+        .toLowerCase();
+
+      let targetWord = currentWord.value.translate
+        .split('')
+        .filter((v) => v !== ' ')
+        .join('')
+        .toLowerCase();
+
+      if (resultWord === targetWord) {
+        alert('УРА');
+      }
+      changeWord(1);
+    };
+
     const width = computed(() => {
       return ((wordGame.wordIndex + 1) * 100) / words.length;
+    });
+
+    useWindowEvent('keydown', ({ key }) => {
+      let index = wordGame.splittedWord.findIndex((letter) => letter.toLowerCase() === key);
+
+      if (key === 'Backspace') {
+        let lastLetterIndex = -1;
+
+        wordGame.pickedLetters.forEach(({ value }, index) => {
+          if (value) lastLetterIndex = index;
+          else return;
+        });
+
+        if (lastLetterIndex === -1) return;
+
+        wordGame.splittedWord.push(wordGame.pickedLetters[lastLetterIndex].value);
+        wordGame.pickedLetters[lastLetterIndex].value = null;
+      }
+
+      if (key === 'Enter') {
+        checkWord();
+      }
+
+      if (index === -1) return;
+
+      let letterIndex = wordGame.pickedLetters.findIndex(
+        ({ value, letter: l }) => value === null && l !== ' ',
+      );
+
+      wordGame.pickedLetters[letterIndex].value = wordGame.splittedWord[index];
+
+      wordGame.splittedWord.splice(index, 1);
     });
 
     return {
@@ -146,6 +193,9 @@ export default {
       letterClass,
       pickLetter,
       width,
+      removeLetter,
+      resetWord,
+      checkWord,
       ...toRefs(wordGame),
     };
   },
@@ -153,10 +203,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-:root {
-  --width: 0%;
-}
-
 .task-card {
   background: radial-gradient(#1fe4f5, #3fbafe);
   color: #ffffff;
@@ -195,8 +241,8 @@ export default {
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
-    width: 50px;
-    height: 50px;
+    width: 40px;
+    height: 40px;
     background: #1ff57f;
     color: white;
     font-weight: bold;
@@ -208,6 +254,8 @@ export default {
   gap: 5px;
 
   .letter {
+    border-radius: 10px;
+
     display: flex;
     flex-wrap: wrap;
     justify-content: center;

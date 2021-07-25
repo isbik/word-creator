@@ -5,7 +5,7 @@
       <input v-model="name" placeholder="Название карточки" type="text" />
       <button @click="createCard">Добавить</button>
     </div>
-    <div class="card card-1" v-for="card in cards" :key="card.id">
+    <div v-for="card in cards" :key="card.id" class="card card-1">
       <h2 class="card__title">{{ card.name }} ({{ card.words }})</h2>
 
       <p class="card__apply">
@@ -53,7 +53,7 @@ export default {
 };
 </script>
 
-<style >
+<style>
 * {
   margin: 0;
   padding: 0;

@@ -1,5 +1,5 @@
 <template>
-  <the-header></the-header>
+  <the-header />
   <router-view />
 </template>
 
@@ -15,6 +15,7 @@ export default {
 <style>
 @import './assets/index.scss';
 body {
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
   padding: 0;
   margin: 0;
   box-sizing: border-box;

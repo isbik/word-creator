@@ -1,9 +1,5 @@
 <template>
-  <div class="container">
-    
-    My cards
-    
-    </div>
+  <div class="container">My cards</div>
 </template>
 
 <script>
