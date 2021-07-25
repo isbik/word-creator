@@ -1,10 +1,5 @@
 <template>
   <div class="container">
-    <div class="card card-2">
-      <h3>Добавить карточку</h3>
-      <input v-model="name" placeholder="Название карточки" type="text" />
-      <button @click="createCard">Добавить</button>
-    </div>
     <div v-for="card in cards" :key="card.id" class="card card-1">
       <h2 class="card__title">{{ card.name }} ({{ card.words }})</h2>
 
@@ -21,7 +16,6 @@
 import { ref } from '@vue/reactivity';
 export default {
   setup() {
-    const name = ref('');
     const cards = ref([
       {
         id: 1,
@@ -35,19 +29,8 @@ export default {
       },
     ]);
 
-    const createCard = () => {
-      cards.value.unshift({
-        id: Date.now(),
-        name: name.value,
-        words: Math.floor(Math.random() * 10),
-      });
-      name.value = '';
-    };
-
     return {
       cards,
-      name,
-      createCard,
     };
   },
 };
@@ -71,18 +54,18 @@ a,
 }
 
 .card {
-  padding: 20px;
+  padding: 10px;
   width: 100%;
   border-radius: 10px;
   box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.25);
   transition: all 0.5s;
   color: #ffffff;
-  margin: 20px 0;
+  margin: 10px 0;
 }
 
 .card input,
 .card button {
-  margin-top: 20px;
+  margin-top: 10px;
   color: white;
   border-radius: 10px;
   padding: 10px 20px;
@@ -110,7 +93,8 @@ a,
 }
 
 .card-4 {
-  background: radial-gradient(#60efbc, #58d5c9);
+  transition: all 0.2s;
+  background: linear-gradient(#60efbc, #58d5c9);
 }
 
 .card-5 {

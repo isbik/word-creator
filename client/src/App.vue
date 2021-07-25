@@ -13,7 +13,7 @@ export default {
 </script>
 
 <style>
-@import './assets/index.scss';
+@import './assets/scss/index.scss';
 body {
   font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
   padding: 0;
