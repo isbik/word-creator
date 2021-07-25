@@ -1,7 +1,16 @@
 <template>
-  <div class="container">
-    <div class="task-card">
-      <h1>{{ card.name }} {{ wordIndex + 1 }} из {{ words.length }}</h1>
+  <div class="task-card">
+    <div class="container">
+      <div class="header-task">
+        <router-link to="/">
+          <button>x</button>
+        </router-link>
+        <div class="progress">
+          <span class="progress-bar" :style="`width: ${width}%`"></span>
+        </div>
+        <p>{{ wordIndex + 1 }} из {{ words.length }}</p>
+      </div>
+      <h1>{{ card.name }}</h1>
       <p>
         {{ currentWord.name }}
       </p>
@@ -121,6 +130,10 @@ export default {
       wordGame.pickedLetters[letterIndex].value = letter;
     };
 
+    const width = computed(() => {
+      return ((wordGame.wordIndex + 1) * 100) / words.length;
+    });
+
     return {
       words,
       card,
@@ -129,6 +142,7 @@ export default {
       letters,
       letterClass,
       pickLetter,
+      width,
       ...toRefs(wordGame),
     };
   },
@@ -136,6 +150,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+:root {
+  --width: 0%;
+}
+
 .task-card {
   background: radial-gradient(#1fe4f5, #3fbafe);
   color: #ffffff;
@@ -201,5 +219,32 @@ export default {
       background: transparent;
     }
   }
+}
+.header-task {
+  button {
+    margin: 0 20px 0 0;
+  }
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  p {
+    margin-left: 20px;
+    white-space: nowrap;
+    word-break: normal;
+  }
+}
+.progress {
+  width: 100%;
+  height: 10px;
+  background: #e1e4e8;
+  border-radius: 5px;
+  overflow: hidden;
+}
+.progress .progress-bar {
+  display: block;
+  height: 100%;
+  background: #b34bff;
+  transition: all 0.2s;
 }
 </style>
