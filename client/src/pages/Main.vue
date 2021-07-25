@@ -1,5 +1,5 @@
 <template>
-  <div class="card-container">
+  <div class="container">
     <div class="card card-2">
       <h3>Добавить карточку</h3>
       <input v-model="name" placeholder="Название карточки" type="text" />
@@ -62,11 +62,6 @@ export default {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.heading-container {
-  margin-bottom: 20px;
-  text-align: center;
-}
-
 a,
 .card__exit,
 .card__icon {
@@ -75,22 +70,14 @@ a,
   color: rgba(255, 255, 255, 0.9);
 }
 
-.card-container {
-  margin: 20px;
-  display: flex;
-  gap: 20px;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
 .card {
   padding: 20px;
-  width: 500px;
+  width: 100%;
   border-radius: 10px;
   box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.25);
   transition: all 0.5s;
   color: #ffffff;
+  margin: 20px 0;
 }
 
 .card input,

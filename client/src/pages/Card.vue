@@ -1,12 +1,17 @@
 <template>
   <div class="container">
-    <div class="card card-1">
+    <div class="task-card">
       <h1>{{ card.name }} {{ wordIndex + 1 }} из {{ words.length }}</h1>
       <p>
         {{ currentWord.name }}
       </p>
       <div class="letters">
-        <div class="letter" v-for="(letter, index) in letters" :key="index">
+        <div
+          @click="pickLetter(index, letter)"
+          class="letter noselect"
+          v-for="(letter, index) in letters"
+          :key="index"
+        >
           {{ letter }}
         </div>
       </div>
@@ -28,94 +33,131 @@
 </template>
 
 <script>
-import { ref } from '@vue/reactivity';
-import { computed, watch } from '@vue/runtime-core';
+import { reactive, ref, toRefs } from '@vue/reactivity';
+import { computed, onBeforeUnmount, onMounted, watch } from '@vue/runtime-core';
+const words = [
+  {
+    id: 123,
+    name: 'Программирование',
+    translate: 'Programming',
+  },
+  {
+    id: 13,
+    name: 'Мир',
+    translate: 'World',
+  },
+  {
+    id: 1234,
+    name: 'Я люблю дождь',
+    translate: 'I like ranning',
+  },
+  {
+    id: 12,
+    name: 'Консервная банка',
+    translate: 'Can',
+  },
+];
+
 export default {
   setup() {
-    const card = {
-      name: 'Test',
+    const card = { name: 'Test' };
+
+    const wordGame = reactive({
+      wordIndex: 2,
+      pickedLetters: [],
+      splittedWord: [],
+    });
+
+    const currentWord = computed(() => words[wordGame.wordIndex]);
+
+    const letters = computed(() => wordGame.splittedWord.filter((letter) => letter !== ' '));
+
+    watch(
+      () => wordGame.wordIndex,
+      () => {
+        wordGame.splittedWord = currentWord.value.translate.split('');
+        wordGame.pickedLetters = wordGame.splittedWord.map((letter) => {
+          return { letter, value: null };
+        });
+        wordGame.splittedWord = wordGame.splittedWord.filter((letter) => letter !== ' ');
+      },
+      { immediate: true },
+    );
+
+    const handlerKeyUp = ({ key }) => {
+      let index = wordGame.splittedWord.findIndex((letter) => letter.toLowerCase() === key);
+
+      if (index === -1) return;
+
+      let letterIndex = wordGame.pickedLetters.findIndex(
+        ({ value, letter: l }) => value === null && l !== ' ',
+      );
+
+      wordGame.pickedLetters[letterIndex].value = wordGame.splittedWord[index];
+
+      wordGame.splittedWord.splice(index, 1);
     };
 
-    const wordIndex = ref(2);
-    const pickedLetters = ref([]);
+    onMounted(() => {
+      window.addEventListener('keydown', handlerKeyUp);
+    });
 
-    const words = [
-      {
-        id: 123,
-        name: 'Программирование',
-        translate: 'Programming',
-      },
-      {
-        id: 13,
-        name: 'Мир',
-        translate: 'World',
-      },
-      {
-        id: 1234,
-        name: 'Я люблю дождь',
-        translate: 'I like ranning',
-      },
-      {
-        id: 12,
-        name: 'Консервная банка',
-        translate: 'Can',
-      },
-    ];
+    onBeforeUnmount(() => {
+      window.removeEventListener('keydown', handlerKeyUp);
+    });
 
-    const currentWord = computed(() => words[wordIndex.value]);
+    // functions
+    const letterClass = ({ letter, value }) => ({ empty: letter === ' ' });
 
-    const splittedWord = computed(() => currentWord.value.translate.split(''));
+    const changeWord = (count) => (wordGame.wordIndex += count);
 
-    const letters = computed(() => splittedWord.value.filter((letter) => letter !== ' '));
+    const pickLetter = (index, letter) => {
+      wordGame.splittedWord.splice(index, 1);
 
-    watch(() => {
-      pickedLetters.value = splittedWord.value.map((letter) => {
-        return { letter, value: null };
-      });
-    }, [currentWord]);
+      let letterIndex = wordGame.pickedLetters.findIndex(
+        ({ value, letter: l }) => value === null && l !== ' ',
+      );
 
-    const letterClass = ({ letter, value }) => {
-      console.log(letter);
-      return {
-        empty: letter === ' ',
-      };
+      wordGame.pickedLetters[letterIndex].value = letter;
     };
 
-    const changeWord = (count) => {
-      wordIndex.value += count;
+    return {
+      words,
+      card,
+      currentWord,
+      changeWord,
+      letters,
+      letterClass,
+      pickLetter,
+      ...toRefs(wordGame),
     };
-
-    return { words, card, wordIndex, currentWord, changeWord, letters, pickedLetters, letterClass };
   },
 };
 </script>
 
-<style lang="scss">
-.container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100vw;
-  height: 100vh;
-  padding: 20px;
-}
-.card {
-  width: 100%;
-  max-width: 500px;
-  border-radius: 10px;
-  box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.25);
-}
-.card h1 {
-  margin-bottom: 10px;
-}
-
-.card:hover {
-  box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.4);
-}
-
-.card__title {
-  font-weight: 400;
+<style lang="scss" scoped>
+.task-card {
+  background: radial-gradient(#1fe4f5, #3fbafe);
   color: #ffffff;
+  margin: 0;
+  position: fixed;
+  padding: 10px 20px;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 100vh;
+  width: 100vw;
+}
+
+.task-card input,
+.task-card button {
+  margin-top: 20px;
+  color: white;
+  border-radius: 10px;
+  padding: 10px 20px;
+  border: none;
+  background: rgba(0, 0, 0, 0.25);
 }
 .letters,
 .picked-letters {
@@ -159,9 +201,5 @@ export default {
       background: transparent;
     }
   }
-}
-
-.card-1 {
-  background: radial-gradient(#1fe4f5, #3fbafe);
 }
 </style>
